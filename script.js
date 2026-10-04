@@ -517,23 +517,38 @@
       }
 
             // ===== OPEN ENVELOPE =====
-      function openEnvelope() {
+            function openEnvelope() {
         if (opened) return;
         opened = true;
 
         envelope.classList.add('open');
         createSparkles();
 
+        // Start music right here — this fires inside the user gesture,
+        // so browsers won't block autoplay
+        try {
+          bgMusic.volume = 0.5;
+          bgMusic.currentTime = 0;
+          const playPromise = bgMusic.play();
+          if (playPromise) {
+            playPromise.then(() => {
+              musicToggle.classList.add('playing');
+            }).catch(() => {
+              // Autoplay blocked (rare) — user can tap the button manually
+              musicToggle.classList.remove('playing');
+            });
+          }
+        } catch (err) {
+          // Silent fail — button toggle still works as fallback
+        }
+
         setTimeout(() => {
-          // Fade out stage butterflies
           stageButterflies.forEach(b => {
             b.style.transition = 'opacity 0.8s ease';
             b.style.opacity = '0';
           });
 
-          // Play the opening video → when it ends, showLandingPage() runs
           playOpeningVideo();
-
         }, 1300);
       }
       // ===== RESET =====
